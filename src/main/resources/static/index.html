@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Library App</title>
+</head>
+<body>
+
+<h2>Dodaj ksiazke</h2>
+
+<form id="bookForm">
+    <label>Tytul:</label><br>
+    <input type="text" id="title"><br><br>
+
+    <label>ISBN:</label><br>
+    <input type="text" id="isbn"><br><br>
+
+    <label>Rok:</label><br>
+    <input type="number" id="year"><br><br>
+
+    <label>Gatunek:</label><br>
+    <input type="text" id="genre"><br><br>
+
+    <label>ID wydawcy:</label><br>
+    <input type="number" id="publisherId"><br><br>
+
+    <button type="submit">Dodaj</button>
+</form>
+
+<p id="status"></p>
+
+<script>
+    document.getElementById("bookForm").addEventListener("submit", function(e) {
+        e.preventDefault();
+
+        const data = {
+            title: document.getElementById("title").value,
+            isbn: document.getElementById("isbn").value,
+            year: parseInt(document.getElementById("year").value),
+            genre: document.getElementById("genre").value,
+            publisherId: parseInt(document.getElementById("publisherId").value)
+        };
+
+        fetch("http://localhost:8080/books", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        })
+            .then(() => {
+                document.getElementById("status").innerText = "Dodano ksiazke";
+            })
+            .catch(() => {
+                document.getElementById("status").innerText = "Blad";
+            });
+    });
+</script>
+
+</body>
+</html>
