@@ -1,0 +1,32 @@
+package com.example.libraryapp.controller;
+
+import com.example.libraryapp.repository.CopyRepository;
+import org.springframework.web.bind.annotation.*;
+import java.util.List;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/copies")
+@CrossOrigin
+public class CopyController {
+
+    private final CopyRepository repository;
+
+    public CopyController(CopyRepository repository) {
+        this.repository = repository;
+    }
+
+    @GetMapping
+    public List<Map<String,Object>> getAll() {
+        return repository.findAll();
+    }
+
+    @PostMapping
+    public void add(@RequestBody Map<String,Object> body) {
+        repository.save(
+            Long.valueOf(body.get("bookId").toString()),
+            Long.valueOf(body.get("libraryId").toString()),
+            (String) body.get("status")
+        );
+    }
+}
