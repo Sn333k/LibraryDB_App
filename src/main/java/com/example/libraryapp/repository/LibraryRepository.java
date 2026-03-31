@@ -25,4 +25,18 @@ public class LibraryRepository {
             city, address
         );
     }
+
+    public void update(Long id, String city, String address) {
+        jdbcTemplate.update(
+                "UPDATE libraries SET city=?, address=? WHERE library_id=?",
+                city, address, id
+        );
+    }
+
+    public void delete(Long id) {
+        jdbcTemplate.update(
+                "DELETE FROM libraries WHERE library_id=?",
+                id
+        );
+    }
 }

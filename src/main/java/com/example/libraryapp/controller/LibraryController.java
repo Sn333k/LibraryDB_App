@@ -24,4 +24,13 @@ public class LibraryController {
     public void addLibrary(@RequestBody Map<String,String> body) {
         libraryRepository.save(body.get("city"), body.get("address"));
     }
+    @PutMapping("/{id}")
+    public void update(@PathVariable Long id, @RequestBody Map<String,String> body) {
+        libraryRepository.update(id, body.get("city"), body.get("address"));
+    }
+
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable Long id) {
+        libraryRepository.delete(id);
+    }
 }

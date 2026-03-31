@@ -32,4 +32,18 @@ public class BookRepository {
             bookId, authorId
         );
     }
+
+    public void update(Long id, String title, String isbn, int year, String genre, Long publisherId) {
+        jdbcTemplate.update(
+                "UPDATE books SET title=?, isbn=?, publication_year=?, genre=?, publisher_id=? WHERE book_id=?",
+                title, isbn, year, genre, publisherId, id
+        );
+    }
+
+    public void delete(Long id) {
+        jdbcTemplate.update(
+                "DELETE FROM books WHERE book_id=?",
+                id
+        );
+    }
 }

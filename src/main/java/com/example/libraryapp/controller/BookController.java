@@ -31,4 +31,21 @@ public class BookController {
     public List<Map<String, Object>> getAllBooks() {
         return bookRepository.findAll();
     }
+
+    @PutMapping("/{id}")
+    public void update(@PathVariable Long id, @RequestBody Map<String,Object> body) {
+        bookRepository.update(
+                id,
+                (String) body.get("title"),
+                (String) body.get("isbn"),
+                (Integer) body.get("year"),
+                (String) body.get("genre"),
+                Long.valueOf(body.get("publisherId").toString())
+        );
+    }
+
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable Long id) {
+        bookRepository.delete(id);
+    }
 }
