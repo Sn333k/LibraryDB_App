@@ -18,12 +18,13 @@ public class BookRepository {
         return jdbcTemplate.queryForList("SELECT * FROM books");
     }
 
-    public void save(String title, String isbn, int year, String genre, Long publisherId) {
+    public Long save(String title, String isbn, int year, String genre, Long publisherId) {
         jdbcTemplate.update(
             "INSERT INTO books(title, isbn, publication_year, genre, publisher_id) VALUES(?, ?, ?, ?, ?)",
             title, isbn, year, genre, publisherId
         );
         jdbcTemplate.queryForObject("SELECT currval(pg_get_serial_sequence('books','book_id'))", Long.class);
+        return publisherId;
     }
 
     public void addAuthor(Long bookId, Long authorId) {

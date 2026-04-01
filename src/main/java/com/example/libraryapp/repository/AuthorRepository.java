@@ -25,4 +25,26 @@ public class AuthorRepository {
             firstName, lastName, nationality
         );
     }
+
+    public Long findOrCreate(String firstName, String lastName, String nationality) {
+        List<Long> ids = jdbcTemplate.query(
+                "SELECT author_id FROM authors WHERE first_name=? AND last_name=?",
+                (rs, rowNum) -> rs.getLong("author_id"),
+                firstName, lastName
+        );
+
+        if (!ids.isEmpty()) {
+            return ids.getFirst();
+        }
+
+        jdbcTemplate.update(
+                "INSERT INTO authors(first_name, last_name, nationality) VALUES (?, ?, ?)",
+                firstName, lastName, nationality
+        );
+
+        return jdbcTemplate.queryForObject(
+                "SELECT currval(pg_get_serial_sequence('authors','author_id'))",
+                Long.class
+        );
+    }
 }
