@@ -1,6 +1,9 @@
 package com.example.libraryapp.controller;
 
+import com.example.libraryapp.model.MemberRequestDto;
 import com.example.libraryapp.repository.MemberRepository;
+import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
@@ -22,14 +25,16 @@ public class MemberController {
     }
 
     @PostMapping
-    public void add(@RequestBody Map<String,String> body) {
+    public ResponseEntity<String> add(@Valid @RequestBody MemberRequestDto request) {
         repository.save(
-            body.get("firstName"),
-            body.get("lastName"),
-            body.get("email"),
-            body.get("phone"),
-            body.get("membershipDate"),
-            body.get("status")
+                request.getFirstName(),
+                request.getLastName(),
+                request.getEmail(),
+                request.getPhone(),
+                request.getMembershipDate(),
+                request.getStatus()
         );
+
+        return ResponseEntity.ok("OK");
     }
 }

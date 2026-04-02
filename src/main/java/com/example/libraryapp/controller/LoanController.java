@@ -1,6 +1,9 @@
 package com.example.libraryapp.controller;
 
+import com.example.libraryapp.model.LoanRequestDto;
 import com.example.libraryapp.repository.LoanRepository;
+import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
@@ -22,15 +25,17 @@ public class LoanController {
     }
 
     @PostMapping
-    public void add(@RequestBody Map<String,Object> body) {
+    public ResponseEntity<String> add(@Valid @RequestBody LoanRequestDto request) {
         repository.save(
-            (String) body.get("loanDate"),
-            (String) body.get("dueDate"),
-            (String) body.get("returnDate"),
-            (String) body.get("status"),
-            Long.valueOf(body.get("memberId").toString()),
-            Long.valueOf(body.get("copyId").toString()),
-            Long.valueOf(body.get("staffId").toString())
+                request.getLoanDate(),
+                request.getDueDate(),
+                request.getReturnDate(),
+                request.getStatus(),
+                request.getMemberId(),
+                request.getCopyId(),
+                request.getStaffId()
         );
+
+        return ResponseEntity.ok("OK");
     }
 }

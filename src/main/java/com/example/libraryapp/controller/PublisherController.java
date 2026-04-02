@@ -1,6 +1,10 @@
 package com.example.libraryapp.controller;
 
+import com.example.libraryapp.model.PublisherRequestDto;
 import com.example.libraryapp.repository.PublisherRepository;
+import jakarta.validation.Valid;
+import org.apache.coyote.Response;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
@@ -22,11 +26,13 @@ public class PublisherController {
     }
 
     @PostMapping
-    public void add(@RequestBody Map<String,String> body) {
+    public ResponseEntity<String> add(@Valid @RequestBody PublisherRequestDto request) {
         repository.save(
-            body.get("name"),
-            body.get("country"),
-            body.get("email")
+                request.getName(),
+                request.getCountry(),
+                request.getEmail()
         );
+
+        return ResponseEntity.ok("OK");
     }
 }

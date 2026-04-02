@@ -1,6 +1,9 @@
 package com.example.libraryapp.controller;
 
+import com.example.libraryapp.model.ReservationRequestDto;
 import com.example.libraryapp.repository.ReservationRepository;
+import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
@@ -22,12 +25,14 @@ public class ReservationController {
     }
 
     @PostMapping
-    public void add(@RequestBody Map<String,Object> body) {
+    public ResponseEntity<String> add(@Valid @RequestBody ReservationRequestDto request) {
         repository.save(
-            Long.valueOf(body.get("bookId").toString()),
-            Long.valueOf(body.get("memberId").toString()),
-            (String) body.get("date"),
-            (String) body.get("status")
+                request.getBookId(),
+                request.getMemberId(),
+                request.getDate(),
+                request.getStatus()
         );
+
+        return ResponseEntity.ok("OK");
     }
 }

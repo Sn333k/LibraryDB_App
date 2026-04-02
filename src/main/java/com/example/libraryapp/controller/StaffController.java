@@ -1,6 +1,9 @@
 package com.example.libraryapp.controller;
 
+import com.example.libraryapp.model.StaffRequestDto;
 import com.example.libraryapp.repository.StaffRepository;
+import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
@@ -22,13 +25,15 @@ public class StaffController {
     }
 
     @PostMapping
-    public void add(@RequestBody Map<String,String> body) {
+    public ResponseEntity<String> add(@Valid @RequestBody StaffRequestDto request) {
         repository.save(
-            body.get("firstName"),
-            body.get("lastName"),
-            body.get("role"),
-            body.get("email"),
-            body.get("hireDate")
+                request.getFirstName(),
+                request.getLastName(),
+                request.getRole(),
+                request.getEmail(),
+                request.getHireDate()
         );
+
+        return ResponseEntity.ok("OK");
     }
 }
