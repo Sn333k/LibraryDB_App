@@ -1,6 +1,9 @@
 package com.example.libraryapp.controller;
 
+import com.example.libraryapp.model.CopyRequestDto;
 import com.example.libraryapp.repository.CopyRepository;
+import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
@@ -22,11 +25,13 @@ public class CopyController {
     }
 
     @PostMapping
-    public void add(@RequestBody Map<String,Object> body) {
+    public ResponseEntity<String> add(@Valid @RequestBody CopyRequestDto request) {
         repository.save(
-            Long.valueOf(body.get("bookId").toString()),
-            Long.valueOf(body.get("libraryId").toString()),
-            (String) body.get("status")
+                request.getBookId(),
+                request.getLibraryId(),
+                request.getStatus()
         );
+
+        return ResponseEntity.ok("OK");
     }
 }

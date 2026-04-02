@@ -1,6 +1,9 @@
 package com.example.libraryapp.controller;
 
+import com.example.libraryapp.model.LibraryRequestDto;
 import com.example.libraryapp.repository.LibraryRepository;
+import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
@@ -21,12 +24,14 @@ public class LibraryController {
     }
 
     @PostMapping
-    public void addLibrary(@RequestBody Map<String,String> body) {
-        libraryRepository.save(body.get("city"), body.get("address"));
+    public ResponseEntity<String> addLibrary(@Valid @RequestBody LibraryRequestDto request) {
+        libraryRepository.save(request.getCity(), request.getAddress());
+        return ResponseEntity.ok("OK");
     }
     @PutMapping("/{id}")
-    public void update(@PathVariable Long id, @RequestBody Map<String,String> body) {
-        libraryRepository.update(id, body.get("city"), body.get("address"));
+    public ResponseEntity<String> update(@PathVariable Long id, @Valid @RequestBody LibraryRequestDto request) {
+        libraryRepository.update(id, request.getCity(), request.getAddress());
+        return ResponseEntity.ok("OK");
     }
 
     @DeleteMapping("/{id}")

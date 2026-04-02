@@ -1,6 +1,11 @@
 package com.example.libraryapp.controller;
 
+import com.example.libraryapp.model.AuthorRequestDto;
 import com.example.libraryapp.repository.AuthorRepository;
+import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
@@ -17,16 +22,22 @@ public class AuthorController {
     }
 
     @GetMapping
-    public List<Map<String,Object>> getAll() {
-        return repository.findAll();
+    public ResponseEntity<?> getAll() {
+        try {
+            return ResponseEntity.ok(repository.findAll());
+        }catch (Exception e) {
+            return ResponseEntity.badRequest().body("Błąd zapytania: " + e.getMessage());
+        }
     }
 
     @PostMapping
-    public void add(@RequestBody Map<String,String> body) {
+    public ResponseEntity<String> add(@Valid @RequestBody AuthorRequestDto request) {
+
         repository.save(
-            body.get("firstName"),
-            body.get("lastName"),
-            body.get("nationality")
+                request.getFirstName(),
+                request.getLastName(),
+                request.getNationality()
         );
+        return ResponseEntity.ok("OK");
     }
 }

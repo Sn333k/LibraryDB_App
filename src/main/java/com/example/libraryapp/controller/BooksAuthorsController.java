@@ -1,6 +1,9 @@
 package com.example.libraryapp.controller;
 
+import com.example.libraryapp.model.BookAuthorDto;
 import com.example.libraryapp.repository.BooksAuthorsRepository;
+import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +25,9 @@ public class BooksAuthorsController {
     }
 
     @PostMapping
-    public void add(@RequestBody Map<String,Long> body) {
-        repository.addRelation(body.get("bookId"), body.get("authorId"));
+    public ResponseEntity<String> add(@Valid @RequestBody BookAuthorDto request) {
+        repository.addRelation(request.getBookId(), request.getAuthorId());
+
+        return ResponseEntity.ok("OK");
     }
 }

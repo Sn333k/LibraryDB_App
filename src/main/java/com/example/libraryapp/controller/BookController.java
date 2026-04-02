@@ -1,8 +1,13 @@
 package com.example.libraryapp.controller;
 
+import com.example.libraryapp.model.BookRequestDto;
+import com.example.libraryapp.model.UpdateBookRequestDto;
 import com.example.libraryapp.repository.AuthorRepository;
 import com.example.libraryapp.repository.BookRepository;
 import com.example.libraryapp.repository.BooksAuthorsRepository;
+import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -28,23 +33,24 @@ public class BookController {
 
     @Transactional
     @PostMapping
-    public void addBook(@RequestBody Map<String, Object> body) {
+    public ResponseEntity<String> addBook(@Valid @RequestBody BookRequestDto request) {
 
         Long bookId = bookRepository.save(
-                (String) body.get("title"),
-                (String) body.get("isbn"),
-                (Integer) body.get("year"),
-                (String) body.get("genre"),
-                Long.valueOf(body.get("publisherId").toString())
+                request.getTitle(),
+                request.getIsbn(),
+                request.getYear(),
+                request.getGenre(),
+                request.getPublisherId()
         );
 
-        String firstName = (String) body.get("authorFirstName"); //Author data
-        String lastName = (String) body.get("authorLastName");
-        String nationality = (String) body.get("nationality");
+        String firstName = request.getAuthorFirstName(); //Author data
+        String lastName = request.getAuthorLastName();
+        String nationality = request.getNationality();
 
         Long authorId = authorRepository.findOrCreate(firstName, lastName, nationality); //Find or add author
 
         booksAuthorsRepository.addRelation(bookId, authorId);// Add relations author-book
+        return ResponseEntity.ok("OK");
     }
 
     @GetMapping
@@ -53,15 +59,16 @@ public class BookController {
     }
 
     @PutMapping("/{id}")
-    public void update(@PathVariable Long id, @RequestBody Map<String,Object> body) {
+    public ResponseEntity<String> update(@PathVariable Long id, @Valid @RequestBody UpdateBookRequestDto request) {
         bookRepository.update(
                 id,
-                (String) body.get("title"),
-                (String) body.get("isbn"),
-                (Integer) body.get("year"),
-                (String) body.get("genre"),
-                Long.valueOf(body.get("publisherId").toString())
+                request.getTitle(),
+                request.getIsbn(),
+                request.getYear(),
+                request.getGenre(),
+                request.getPublisherId()
         );
+        return ResponseEntity.ok("OK");
     }
 
     @DeleteMapping("/{id}")

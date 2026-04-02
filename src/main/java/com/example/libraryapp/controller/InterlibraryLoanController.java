@@ -1,6 +1,9 @@
 package com.example.libraryapp.controller;
 
+import com.example.libraryapp.model.InternalLoanRequestDto;
 import com.example.libraryapp.repository.InterlibraryLoanRepository;
+import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
@@ -22,13 +25,15 @@ public class InterlibraryLoanController {
     }
 
     @PostMapping
-    public void add(@RequestBody Map<String,Object> body) {
+    public ResponseEntity<String> add(@Valid @RequestBody InternalLoanRequestDto request) {
         repository.save(
-            (String) body.get("loanDate"),
-            (String) body.get("returnDate"),
-            Long.valueOf(body.get("copyId").toString()),
-            Long.valueOf(body.get("lendingLibraryId").toString()),
-            Long.valueOf(body.get("targetLibraryId").toString())
+                request.getLoanDate(),
+                request.getReturnDate(),
+                request.getCopyId(),
+                request.getLendingLibraryId(),
+                request.getTargetLibraryId()
         );
+
+        return ResponseEntity.ok("OK");
     }
 }
