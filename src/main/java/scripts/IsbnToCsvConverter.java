@@ -2,8 +2,19 @@ package scripts;
 
 import java.io.*;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+/*
+URUCHOMIENIE SKRYPTU WYMAGA PLIKÓW POBRANYCH Z https://openlibrary.org/developers/dumps:
+editions dump (~ 9.2G)
+authors dump (~ 0.5G)
+Takie parametry STEP i LIMIT powodują że do pliku books dostaną się 4 rekordy bez isbn. Wtedy najlepiej wejść przez intelij, widok tabeli i sortować po isbn
+i usunąć błędne wiersze
+ */
 
 public class IsbnToCsvConverter {
 
@@ -15,12 +26,10 @@ public class IsbnToCsvConverter {
     private static final int LIMIT = 10000;
 
     private static final Set<String> neededAuthorKeys = new HashSet<>();
-    private static final Set<String> publisherSet = new HashSet<>();
     private static final Set<String> addedAuthorsNamesSet = new HashSet<>();
 
     private static final Map<String, String> authorMap = new HashMap<>();
 
-    private static final List<String[]> publishers = new ArrayList<>();
     private static final List<String[]> authors = new ArrayList<>();
     private static final List<String[]> books = new ArrayList<>();
     private static final List<String[]> booksAuthorsRaw = new ArrayList<>(); // [ISBN, AuthorKey]
@@ -34,6 +43,7 @@ public class IsbnToCsvConverter {
 
             System.out.println("--- STEP 2: Loading Needed Authors Only ---");
             loadNeededAuthors();
+
 
             System.out.println("--- STEP 3: Exporting to CSV ---");
             exportAll();
@@ -51,13 +61,11 @@ public class IsbnToCsvConverter {
             String line;
             int lineNumber = 0;
             int processedCount = 0;
-            //System.out.printf("a");
+            Pattern pattern = Pattern.compile("\\d{4}");
             while ((line = br.readLine()) != null && processedCount < LIMIT) {
                 lineNumber++;
                 if (lineNumber % STEP != 0) continue;
-                //System.out.printf("b");
                 try {
-                    //System.out.printf("c");
                     String[] tsv = line.split("\t");
                     if (tsv.length < 5) continue;
                     String jsonPart = tsv[tsv.length - 1];
@@ -74,32 +82,18 @@ public class IsbnToCsvConverter {
 
                     // --- Title ---
                     String title = json.optString("title", "Unknown Title");
+                    if (title.length() >= 200) title=title.substring(0, 50);
 
                     // --- Year ---
                     int year = parseYear(json.optString("publish_date", "2000"));
 
-                    // --- Publisher ---
-                    String publisherName = "Unknown Publisher";
-                    if (json.has("publishers")) {
-                        JSONArray pubs = json.getJSONArray("publishers");
-                        if (pubs.length() > 0) publisherName = pubs.getString(0);
-                    }
-
-                    if (publisherSet.add(publisherName.toLowerCase())) {
-                        publishers.add(new String[]{
-                                publisherName,
-                                "Unknown",
-                                "contact@" + publisherName.toLowerCase().replaceAll("[^a-z]", "") + ".com"
-                        });
-                    }
-
                     // --- Genre ---
                     String genre = "General";
                     if (json.has("subjects")) {
-                        genre = json.getJSONArray("subjects").optString(0, "General");
+                        genre = pickBestSubject(json.getJSONArray("subjects"));
                     }
 
-                    books.add(new String[]{title, isbn, String.valueOf(year), publisherName, genre});
+                    books.add(new String[]{title, isbn, String.valueOf(year), genre});
 
                     // --- Collect Author Keys ---
                     if (json.has("authors")) {
@@ -156,7 +150,7 @@ public class IsbnToCsvConverter {
                             String[] nameParts = fullName.split(" ", 2);
                             String firstName = nameParts[0];
                             String lastName = (nameParts.length > 1) ? nameParts[1] : "Unknown";
-                            authors.add(new String[]{firstName, lastName, "Unknown"});
+                            authors.add(new String[]{firstName, lastName});
                         }
 
                         foundCount++;
@@ -177,22 +171,23 @@ public class IsbnToCsvConverter {
             booksAuthorsFinal.add(new String[]{isbn, authorName});
         }
 
-        writeCsv("publishers.csv", new String[]{"publisher_name", "country", "contact_email"}, publishers);
-        writeCsv("authors.csv", new String[]{"first_name", "last_name", "nationality"}, authors);
-        writeCsv("books.csv", new String[]{"title", "ISBN", "publication_year", "publisher_name", "genre"}, books);
+        writeCsv("authors.csv", new String[]{"first_name", "last_name"}, authors);
+        writeCsv("books.csv", new String[]{"title", "ISBN", "publication_year", "genre"}, books);
         writeCsv("books_authors.csv", new String[]{"book_ISBN", "author_fullname"}, booksAuthorsFinal);
     }
 
     // ========================= POMOCNICZE =========================
     private static int parseYear(String dateStr) {
         if (dateStr == null || dateStr.isEmpty()) return 2000;
-        String digits = dateStr.replaceAll("[^0-9]", "");
-        if (digits.length() >= 4) {
-            try {
-                return Integer.parseInt(digits.substring(0, 4));
-            } catch (NumberFormatException e) { return 2000; }
+        Pattern pattern = Pattern.compile("\\d{4}");
+        Matcher matcher = pattern.matcher(dateStr);
+        String year = "0000";
+        while (matcher.find()) {
+            year = matcher.group();
         }
-        return 2000;
+        try {
+            return Integer.parseInt(year.substring(0, 4));
+        } catch (NumberFormatException e) { return 2000; }
     }
 
     private static void writeCsv(String fileName, String[] headers, List<String[]> rows) throws Exception {
@@ -205,5 +200,43 @@ public class IsbnToCsvConverter {
                 pw.println(String.join(",", row));
             }
         }
+    }
+
+    private static String pickBestSubject(JSONArray subjects) {
+        String best = "General";
+        int bestScore = Integer.MIN_VALUE;
+
+        for (int i = 0; i < subjects.length(); i++) {
+            String raw = subjects.optString(i, "").trim();
+            if (raw.isEmpty()) continue;
+
+            String candidate = raw.split("--")[0].trim();
+
+            int score = 0;
+
+            score -= candidate.length();
+
+            if (!raw.contains("--")) score += 10;
+
+            if (candidate.matches(".*\\d.*")) score -= 20;
+
+            if (candidate.split(" ").length > 3) score -= 10;
+
+            String lower = candidate.toLowerCase();
+            if (lower.contains("united states") ||
+                    lower.contains("england") ||
+                    lower.contains("sweden") ||
+                    lower.contains("france")) {
+                score -= 15;
+            }
+
+            if (score > bestScore) {
+                bestScore = score;
+                best = candidate;
+            }
+        }
+        if (best.length() >= 50) best=best.substring(0, 50);
+
+        return best;
     }
 }

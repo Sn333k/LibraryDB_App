@@ -14,23 +14,19 @@ CREATE TABLE PUBLISHERS (
 CREATE TABLE AUTHORS (
       author_id SERIAL PRIMARY KEY,
       first_name VARCHAR(100) NOT NULL,
-      last_name VARCHAR(100) NOT NULL,
-      nationality VARCHAR(50) NOT NULL
+      last_name VARCHAR(200) NOT NULL
 );
 
 CREATE TABLE BOOKS (
       book_id SERIAL PRIMARY KEY,
       title VARCHAR(200) NOT NULL,
-      ISBN VARCHAR(20) NOT NULL,
+      ISBN VARCHAR(20) NOT NULL UNIQUE,
       publication_year INT NOT NULL,
-      publisher_id INT NOT NULL,
-      genre VARCHAR(50) NOT NULL,
-      CONSTRAINT fk_books_publisher FOREIGN KEY (publisher_id)
-      REFERENCES PUBLISHERS(publisher_id)
+      genre VARCHAR(50) NOT NULL
 );
 
 CREATE TABLE BOOKS_AUTHORS (
-      book_id SERIAL NOT NULL,
+      book_id INT NOT NULL,
       author_id INT NOT NULL,
       PRIMARY KEY (book_id, author_id),
       CONSTRAINT fk_ba_book FOREIGN KEY (book_id) REFERENCES BOOKS(book_id),
@@ -100,3 +96,13 @@ CREATE TABLE RESERVATION (
       CONSTRAINT fk_res_book FOREIGN KEY (book_id) REFERENCES BOOKS(book_id),
       CONSTRAINT fk_res_member FOREIGN KEY (member_id) REFERENCES MEMBERS(member_id)
 );
+
+-- UNIQUE constraints
+ALTER TABLE AUTHORS ADD CONSTRAINT unique_author UNIQUE (first_name, last_name);
+
+-- indeksy
+CREATE INDEX idx_authors_name ON AUTHORS(first_name, last_name);
+CREATE INDEX idx_books_isbn ON BOOKS(ISBN);
+
+-- case-insensitive uniqueness
+CREATE UNIQUE INDEX unique_author_lower ON AUTHORS (LOWER(first_name), LOWER(last_name));
