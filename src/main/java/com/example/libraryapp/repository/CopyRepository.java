@@ -21,8 +21,21 @@ public class CopyRepository {
 
     public void save(Long bookId, Long libraryId, String status) {
         jdbcTemplate.update(
-            "INSERT INTO copies(book_id, library_id, status) VALUES (?, ?, ?)",
-            bookId, libraryId, status
+                "INSERT INTO copies(book_id, library_id, status) VALUES (?, ?, ?)",
+                bookId, libraryId, status
         );
+    }
+
+    public List<Map<String, Object>> findAvailableByBookAndCity(Long bookId, String city) {
+        String sql = """
+            SELECT c.copy_id, c.status, l.library_id, l.city, l.address
+            FROM copies c
+            JOIN libraries l ON c.library_id = l.library_id
+            WHERE c.book_id = ? 
+              AND l.city ILIKE ? 
+              AND c.status = 'A'
+        """;
+
+        return jdbcTemplate.queryForList(sql, bookId, city);
     }
 }

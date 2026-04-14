@@ -24,6 +24,16 @@ public class BooksAuthorsController {
         return repository.findAll();
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<List<Map<String, Object>>> searchBooks(
+            @RequestParam(required = false, defaultValue = "") String title,
+            @RequestParam(required = false, defaultValue = "") String author) {
+
+        List<Map<String, Object>> results = repository.findByTitleAndAuthor(title, author);
+        return ResponseEntity.ok(results);
+    }
+
+
     @PostMapping
     public ResponseEntity<String> add(@Valid @RequestBody BookAuthorDto request) {
         repository.addRelation(request.getBookId(), request.getAuthorId());

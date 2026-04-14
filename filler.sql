@@ -4,17 +4,24 @@ CREATE TABLE temp_books_authors (
 );
 
 COPY AUTHORS(first_name, last_name)
-    FROM 'D:/PWR/SM SEM 1/Zaawansowane BAZY DANYCH/LibraryApp/csv_output/authors.csv'
+    FROM '/data/authors.csv'
     WITH (FORMAT CSV, HEADER, QUOTE '|', DELIMITER ',');
 
 COPY BOOKS(title, ISBN, publication_year, genre)
-    FROM 'D:/PWR/SM SEM 1/Zaawansowane BAZY DANYCH/LibraryApp/csv_output/books.csv'
+    FROM '/data/books.csv'
     WITH ( FORMAT CSV, HEADER, QUOTE E'\b', DELIMITER ',');
 
 COPY temp_books_authors(book_isbn, author_fullname)
-    FROM 'D:/PWR/SM SEM 1/Zaawansowane BAZY DANYCH/LibraryApp/csv_output/books_authors.csv'
+    FROM '/data/books_authors.csv'
     WITH (FORMAT CSV, HEADER, QUOTE '|', DELIMITER ',');
 
+COPY STAFF(first_name, last_name, role, email, hire_date)
+    FROM '/data/staff.csv'
+    WITH (FORMAT CSV, HEADER, DELIMITER ',');
+
+COPY MEMBERS(first_name, last_name, email, phone, membership_date, membership_status)
+    FROM '/data/members.csv'
+    WITH (FORMAT CSV, HEADER, DELIMITER ',');
 INSERT INTO BOOKS_AUTHORS (book_id, author_id)
 SELECT DISTINCT b.book_id, a.author_id
 FROM temp_books_authors tba
@@ -26,9 +33,8 @@ ON CONFLICT (book_id, author_id) DO NOTHING;
 DROP TABLE temp_books_authors;
 
 COPY LIBRARIES(city, address)
-    FROM 'D:/PWR/SM SEM 1/Zaawansowane BAZY DANYCH/LibraryApp/csv_output/libraries.csv'
+    FROM '/data/libraries.csv'
     WITH (FORMAT CSV, HEADER, DELIMITER ',');
-
 CREATE SEQUENCE copies_seq;
 
 INSERT INTO COPIES (copy_id, book_id, library_id, status)

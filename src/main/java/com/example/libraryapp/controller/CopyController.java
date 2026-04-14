@@ -24,6 +24,17 @@ public class CopyController {
         return repository.findAll();
     }
 
+    @GetMapping("/search-available")
+    public ResponseEntity<List<Map<String, Object>>> searchAvailable(
+            @RequestParam Long bookId,
+            @RequestParam(required = false, defaultValue = "") String city) {
+
+        String searchCity = "%" + city + "%";
+
+        List<Map<String, Object>> results = repository.findAvailableByBookAndCity(bookId, searchCity);
+        return ResponseEntity.ok(results);
+    }
+
     @PostMapping
     public ResponseEntity<String> add(@Valid @RequestBody CopyRequestDto request) {
         repository.save(

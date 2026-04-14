@@ -4,6 +4,7 @@ services:
   postgres-db:
     image: postgres:15
     container_name: libraryDB
+    command: postgres -c shared_preload_libraries=pg_stat_statements
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 2004
@@ -11,5 +12,6 @@ services:
     ports:
       - "5432:5432"
     volumes:
-
       - ./schema.sql:/docker-entrypoint-initdb.d/1-schema.sql
+      - ./filler.sql:/docker-entrypoint-initdb.d/2-filler.sql
+      - ./csv_output:/data
