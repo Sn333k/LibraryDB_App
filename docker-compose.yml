@@ -5,8 +5,8 @@ services:
     image: postgres:15
     container_name: libraryDB
     environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: password123
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 2004
       POSTGRES_DB: libraryDB
     ports:
       - "5432:5432"
