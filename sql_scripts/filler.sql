@@ -34,11 +34,17 @@ CREATE SEQUENCE copies_seq;
 INSERT INTO COPIES (copy_id, book_id, library_id, status)
 SELECT
     nextval('copies_seq'),
-    b.book_id,
-    l.library_id,
+    t.book_id,
+    t.library_id,
     'A'
-FROM generate_series(1, 100) AS l(library_id)
-         CROSS JOIN generate_series(1, 10000) AS b(book_id)
-         CROSS JOIN LATERAL generate_series(1, floor(random()*10)::int);
+FROM (
+         SELECT
+             b.book_id,
+             l.library_id,
+             floor(random() * 10)::int AS copies_count
+         FROM generate_series(1, 100) l(library_id)
+                  CROSS JOIN generate_series(1, 10000) b(book_id)
+     ) t
+         JOIN generate_series(1, t.copies_count) gs ON true;
 
 DROP SEQUENCE copies_seq;
