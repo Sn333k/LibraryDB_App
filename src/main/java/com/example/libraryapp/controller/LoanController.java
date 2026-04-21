@@ -1,6 +1,7 @@
 package com.example.libraryapp.controller;
 
 import com.example.libraryapp.model.LoanRequestDto;
+import com.example.libraryapp.repository.CopyRepository;
 import com.example.libraryapp.repository.LoanRepository;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -13,26 +14,44 @@ import java.util.Map;
 @CrossOrigin
 public class LoanController {
 
-    private final LoanRepository repository;
+    private final LoanRepository loanRepository;
+    private final CopyRepository copyRepository;
 
-    public LoanController(LoanRepository repository) {
-        this.repository = repository;
+    public LoanController(LoanRepository loanRepository, CopyRepository copyRepository) {
+        this.loanRepository = loanRepository;
+        this.copyRepository = copyRepository;
     }
 
     @GetMapping
     public List<Map<String,Object>> getAll() {
-        return repository.findAll();
+        return loanRepository.findAll();
     }
 
     @PostMapping
     public ResponseEntity<String> add(@Valid @RequestBody LoanRequestDto request) {
-        repository.save(
+
+        Map<String, Object> copy =
+                copyRepository.findOneAvailable(
+                        request.getBookId(),
+                        request.getCity()
+                );
+
+        if (copy == null) {
+            return ResponseEntity.badRequest()
+                    .body("Brak dostępnych egzemplarzy w tym mieście");
+        }
+
+        Long copyId = ((Number) copy.get("copy_id")).longValue();
+
+        copyRepository.updateStatus(copyId, "L");
+
+        loanRepository.save(
                 request.getLoanDate(),
                 request.getDueDate(),
-                request.getReturnDate(),
-                request.getStatus(),
+                null,
+                "ACTIVE",
                 request.getMemberId(),
-                request.getCopyId(),
+                copyId,
                 request.getStaffId()
         );
 

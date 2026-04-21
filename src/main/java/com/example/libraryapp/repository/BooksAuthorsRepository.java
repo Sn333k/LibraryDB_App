@@ -28,11 +28,12 @@ public class BooksAuthorsRepository {
 
     public List<Map<String, Object>> findByTitleAndAuthor(String title, String authorName) {
         String sql = """
-            SELECT b.book_id, b.title, b.isbn, b.publication_year, a.first_name, a.last_name
+            SELECT b.book_id, b.title, b.isbn, b.publication_year, STRING_AGG(a.first_name || ' ' || a.last_name, ', ') AS authors
             FROM books b
             JOIN books_authors ba ON b.book_id = ba.book_id
             JOIN authors a ON ba.author_id = a.author_id
             WHERE b.title ILIKE ? AND (a.first_name || ' ' || a.last_name) ILIKE ?
+            GROUP BY b.book_id, b.title, b.isbn, b.publication_year
         """;
 
         String searchTitle = "%" + title + "%";

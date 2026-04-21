@@ -5,27 +5,26 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
+
 @Getter
 @Setter
 public class LoanRequestDto {
 
-    @NotBlank
-    private String loanDate;
+    @NotNull
+    private LocalDate loanDate;
 
-    @NotBlank
-    private String dueDate;
-
-    @NotBlank
-    private String returnDate;
-
-    @NotBlank
-    private String status;
+    @NotNull
+    private LocalDate dueDate;
 
     @NotNull
     private Long memberId;
 
     @NotNull
-    private Long copyId;
+    private Long bookId;
+
+    @NotNull
+    private String city;
 
     @NotNull
     private Long staffId;

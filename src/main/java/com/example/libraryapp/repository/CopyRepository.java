@@ -38,4 +38,28 @@ public class CopyRepository {
 
         return jdbcTemplate.queryForList(sql, bookId, city);
     }
+
+    public Map<String, Object> findOneAvailable(Long bookId, String city) {
+        String sql = """
+        SELECT c.copy_id
+        FROM copies c
+        JOIN libraries l ON c.library_id = l.library_id
+        WHERE c.book_id = ? 
+          AND l.city ILIKE ? 
+          AND c.status = 'A'
+        LIMIT 1
+    """;
+
+        List<Map<String, Object>> result =
+                jdbcTemplate.queryForList(sql, bookId, "%" + city + "%");
+
+        return result.isEmpty() ? null : result.getFirst();
+    }
+
+    public void updateStatus(Long copyId, String status) {
+        jdbcTemplate.update(
+                "UPDATE copies SET status=? WHERE copy_id=?",
+                status, copyId
+        );
+    }
 }

@@ -101,8 +101,8 @@ CREATE TABLE RESERVATION (
 ALTER TABLE AUTHORS ADD CONSTRAINT unique_author UNIQUE (first_name, last_name);
 
 -- indeksy
-CREATE INDEX idx_authors_name ON AUTHORS(first_name, last_name);
-CREATE INDEX idx_books_isbn ON BOOKS(ISBN);
+-- INDEX idx_authors_name ON AUTHORS(first_name, last_name);
+--CREATE INDEX idx_books_isbn ON BOOKS(ISBN);
 
 -- case-insensitive uniqueness
-CREATE UNIQUE INDEX unique_author_lower ON AUTHORS (LOWER(first_name), LOWER(last_name));
+--CREATE UNIQUE INDEX unique_author_lower ON AUTHORS (LOWER(first_name), LOWER(last_name));
