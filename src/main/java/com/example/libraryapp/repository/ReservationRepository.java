@@ -3,6 +3,7 @@ package com.example.libraryapp.repository;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -19,7 +20,7 @@ public class ReservationRepository {
         return jdbcTemplate.queryForList("SELECT * FROM reservation");
     }
 
-    public void save(Long bookId, Long memberId, String date, String status) {
+    public void save(Long bookId, Long memberId, LocalDate date, String status) {
         jdbcTemplate.update(
             "INSERT INTO reservation(book_id, member_id, reservation_date, status) VALUES (?, ?, ?, ?)",
             bookId, memberId, date, status
