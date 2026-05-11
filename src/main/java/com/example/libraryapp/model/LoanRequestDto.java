@@ -5,18 +5,20 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
+
 @Getter
 @Setter
 public class LoanRequestDto {
 
-    @NotBlank
-    private String loanDate;
+    @NotNull
+    private LocalDate loanDate;
 
-    @NotBlank
-    private String dueDate;
+    @NotNull
+    private LocalDate dueDate;
 
-    @NotBlank
-    private String returnDate;
+    @NotNull
+    private LocalDate returnDate;
 
     @NotBlank
     private String status;
@@ -25,7 +27,10 @@ public class LoanRequestDto {
     private Long memberId;
 
     @NotNull
-    private Long copyId;
+    private Long bookId;
+
+    @NotNull
+    private Long library_id;
 
     @NotNull
     private Long staffId;

@@ -32,8 +32,9 @@ public class LoanController {
                 request.getReturnDate(),
                 request.getStatus(),
                 request.getMemberId(),
-                request.getCopyId(),
-                request.getStaffId()
+                request.getBookId(),
+                request.getStaffId(),
+                request.getLibrary_id()
         );
 
         return ResponseEntity.ok("OK");
