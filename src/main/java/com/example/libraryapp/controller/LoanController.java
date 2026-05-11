@@ -1,7 +1,6 @@
 package com.example.libraryapp.controller;
 
 import com.example.libraryapp.model.LoanRequestDto;
-import com.example.libraryapp.repository.CopyRepository;
 import com.example.libraryapp.repository.LoanRepository;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -14,45 +13,28 @@ import java.util.Map;
 @CrossOrigin
 public class LoanController {
 
-    private final LoanRepository loanRepository;
-    private final CopyRepository copyRepository;
+    private final LoanRepository repository;
 
-    public LoanController(LoanRepository loanRepository, CopyRepository copyRepository) {
-        this.loanRepository = loanRepository;
-        this.copyRepository = copyRepository;
+    public LoanController(LoanRepository repository) {
+        this.repository = repository;
     }
 
     @GetMapping
     public List<Map<String,Object>> getAll() {
-        return loanRepository.findAll();
+        return repository.findAll();
     }
 
     @PostMapping
     public ResponseEntity<String> add(@Valid @RequestBody LoanRequestDto request) {
-
-        Map<String, Object> copy =
-                copyRepository.findOneAvailable(
-                        request.getBookId(),
-                        request.getCity()
-                );
-
-        if (copy == null) {
-            return ResponseEntity.badRequest()
-                    .body("Brak dostępnych egzemplarzy w tym mieście");
-        }
-
-        Long copyId = ((Number) copy.get("copy_id")).longValue();
-
-        copyRepository.updateStatus(copyId, "L");
-
-        loanRepository.save(
+        repository.save(
                 request.getLoanDate(),
                 request.getDueDate(),
-                null,
-                "ACTIVE",
+                request.getReturnDate(),
+                request.getStatus(),
                 request.getMemberId(),
-                copyId,
-                request.getStaffId()
+                request.getBookId(),
+                request.getStaffId(),
+                request.getLibrary_id()
         );
 
         return ResponseEntity.ok("OK");

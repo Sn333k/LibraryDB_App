@@ -18,13 +18,19 @@ public class LoanRequestDto {
     private LocalDate dueDate;
 
     @NotNull
+    private LocalDate returnDate;
+
+    @NotBlank
+    private String status;
+
+    @NotNull
     private Long memberId;
 
     @NotNull
     private Long bookId;
 
     @NotNull
-    private String city;
+    private Long library_id;
 
     @NotNull
     private Long staffId;
