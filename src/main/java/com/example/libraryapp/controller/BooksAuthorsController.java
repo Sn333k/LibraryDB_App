@@ -27,9 +27,10 @@ public class BooksAuthorsController {
     @GetMapping("/search")
     public ResponseEntity<List<Map<String, Object>>> searchBooks(
             @RequestParam(required = false, defaultValue = "") String title,
-            @RequestParam(required = false, defaultValue = "") String author) {
+            @RequestParam(required = false, defaultValue = "") String author,
+            @RequestParam(required = false, defaultValue = "") String library) {
 
-        List<Map<String, Object>> results = repository.findByTitleAndAuthor(title, author);
+        List<Map<String, Object>> results = repository.findByTitleAndAuthor(title, author, library);
         return ResponseEntity.ok(results);
     }
 

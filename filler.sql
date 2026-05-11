@@ -22,6 +22,13 @@ COPY STAFF(first_name, last_name, role, email, hire_date)
 COPY MEMBERS(first_name, last_name, email, phone, membership_date, membership_status)
     FROM '/data/members.csv'
     WITH (FORMAT CSV, HEADER, DELIMITER ',');
+
+COPY LIBRARIES(city, address)
+    FROM '/data/libraries.csv'
+    WITH (FORMAT CSV, HEADER, DELIMITER ',');
+
+CREATE SEQUENCE copies_seq;
+
 INSERT INTO BOOKS_AUTHORS (book_id, author_id)
 SELECT DISTINCT b.book_id, a.author_id
 FROM temp_books_authors tba
@@ -31,11 +38,6 @@ FROM temp_books_authors tba
 ON CONFLICT (book_id, author_id) DO NOTHING;
 
 DROP TABLE temp_books_authors;
-
-COPY LIBRARIES(city, address)
-    FROM '/data/libraries.csv'
-    WITH (FORMAT CSV, HEADER, DELIMITER ',');
-CREATE SEQUENCE copies_seq;
 
 INSERT INTO COPIES (copy_id, book_id, library_id, status)
 SELECT
