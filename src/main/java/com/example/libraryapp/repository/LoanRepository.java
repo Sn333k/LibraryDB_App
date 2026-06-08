@@ -31,7 +31,7 @@ public class LoanRepository {
         // 1. Znalezienie ID pierwszej dostępnej kopii (status 'A') dla danej książki w bibliotece
         try {
             availableCopyId = jdbcTemplate.queryForObject(
-                    "SELECT copy_id FROM copies WHERE book_id = ? AND library_id = ? AND status = 'A' LIMIT 1",
+                    "SELECT copy_id FROM copies WHERE book_id = ? AND library_id = ? AND status = 'A' LIMIT 1 FOR UPDATE",
                     Long.class,
                     bookId, libraryId
             );

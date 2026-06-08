@@ -1,21 +1,220 @@
+#version: '3.8'
+#
+#services:
+#  postgres-db:
+#    image: bitnami/postgresql:15
+#    container_name: libraryDB
+#    shm_size: '256mb'
+#    command: >
+#      postgres
+#      -c shared_preload_libraries=pg_stat_statements
+##      -c max_connections=350
+##      -c max_connections=50
+##      -c shared_buffers=128MB
+##      -c work_mem=64kB
+#    environment:
+#      POSTGRES_USER: postgres
+#      POSTGRES_PASSWORD: 2004
+#      POSTGRES_DB: libraryDB
+#    ports:
+#      - "5432:5432"
+#    volumes:
+#      - ./schema.sql:/docker-entrypoint-initdb.d/1-schema.sql
+#      - ./filler.sql:/docker-entrypoint-initdb.d/2-filler.sql
+#      - ./csv_output:/data
+#    # ----------------------------------------------------
+#    # DODANE LIMITY ZASOBÓW DLA TESTÓW WYDAJNOŚCIOWYCH
+#    # ----------------------------------------------------
+#    deploy:
+#      resources:
+#        limits:
+#          cpus: '1.0'
+##          memory: 1G
+#          memory: 512M
+
+#version: '3.8'
+#
+#services:
+#  postgres-db:
+#    image: bitnami/postgresql:latest
+#    container_name: libraryDB
+#    shm_size: '256mb'
+#    environment:
+#      # Zmienne specyficzne dla Bitnami
+#      POSTGRESQL_USERNAME: postgres
+#      POSTGRESQL_PASSWORD: 2004
+#      POSTGRESQL_DATABASE: libraryDB
+#
+#      # Zastępuje Twoją starą sekcję 'command'
+#      POSTGRESQL_EXTRA_FLAGS: "-c shared_preload_libraries=pg_stat_statements"
+#    ports:
+#      - "5432:5432"
+#    volumes:
+#      - ./schema.sql:/docker-entrypoint-initdb.d/1-schema.sql
+#      - ./filler.sql:/docker-entrypoint-initdb.d/2-filler.sql
+#      - ./csv_output:/data
+#      # Ważne: Bitnami wymaga własnego wolumenu do zapisu danych
+#      - bitnami_postgres_data:/bitnami/postgresql
+#    deploy:
+#      resources:
+#        limits:
+#          cpus: '1.0'
+#          memory: 512M
+#
+#volumes:
+#  bitnami_postgres_data:
+
+
 version: '3.8'
 
 services:
-  postgres-db:
-    image: postgres:15
-    container_name: libraryDB
-    command: postgres -c shared_preload_libraries=pg_stat_statements
-    deploy:
-      resources:
-        limits:
-          memory: 1G
+  # ----------------------------------------------------
+  # WĘZEŁ GŁÓWNY (PRIMARY) - Port: 5432
+  # ----------------------------------------------------
+  postgres-primary:
+    image: bitnami/postgresql:latest
+    container_name: libraryDB_primary
+    shm_size: '256mb'
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 2004
-      POSTGRES_DB: libraryDB
+      POSTGRESQL_USERNAME: postgres
+      POSTGRESQL_PASSWORD: 2004
+      POSTGRESQL_DATABASE: libraryDB
+      POSTGRESQL_EXTRA_FLAGS: "-c shared_preload_libraries=pg_stat_statements"
+      POSTGRESQL_REPLICATION_MODE: master
+      POSTGRESQL_REPLICATION_USER: repl_user
+      POSTGRESQL_REPLICATION_PASSWORD: repl_password
     ports:
       - "5432:5432"
     volumes:
       - ./schema.sql:/docker-entrypoint-initdb.d/1-schema.sql
       - ./filler.sql:/docker-entrypoint-initdb.d/2-filler.sql
       - ./csv_output:/data
+      - primary_data:/bitnami/postgresql
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+  # ----------------------------------------------------
+  # REPLIKA NR 1 (Ukryta wewnątrz sieci)
+  # ----------------------------------------------------
+  postgres-replica-1:
+    image: bitnami/postgresql:latest
+    container_name: libraryDB_replica_1
+    shm_size: '256mb'
+    environment:
+      POSTGRESQL_PASSWORD: 2004
+      POSTGRESQL_EXTRA_FLAGS: "-c shared_preload_libraries=pg_stat_statements"
+      POSTGRESQL_REPLICATION_MODE: slave
+      POSTGRESQL_REPLICATION_USER: repl_user
+      POSTGRESQL_REPLICATION_PASSWORD: repl_password
+      POSTGRESQL_MASTER_HOST: postgres-primary
+      POSTGRESQL_MASTER_PORT_NUMBER: 5432
+    # USUNIĘTO PORTS - ruch z zewnątrz tu nie dotrze bezpośrednio
+    depends_on:
+      - postgres-primary
+    volumes:
+      - replica_1_data:/bitnami/postgresql # Własny dysk!
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+  # ----------------------------------------------------
+  # REPLIKA NR 2 (Ukryta wewnątrz sieci)
+  # ----------------------------------------------------
+  postgres-replica-2:
+    image: bitnami/postgresql:latest
+    container_name: libraryDB_replica_2
+    shm_size: '256mb'
+    environment:
+      POSTGRESQL_PASSWORD: 2004
+      POSTGRESQL_EXTRA_FLAGS: "-c shared_preload_libraries=pg_stat_statements"
+      POSTGRESQL_REPLICATION_MODE: slave
+      POSTGRESQL_REPLICATION_USER: repl_user
+      POSTGRESQL_REPLICATION_PASSWORD: repl_password
+      POSTGRESQL_MASTER_HOST: postgres-primary
+      POSTGRESQL_MASTER_PORT_NUMBER: 5432
+    # USUNIĘTO PORTS - ruch z zewnątrz tu nie dotrze bezpośrednio
+    depends_on:
+      - postgres-primary
+    volumes:
+      - replica_2_data:/bitnami/postgresql # Własny dysk!
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+  # ----------------------------------------------------
+  # NOWA REPLIKA NR 3
+  # ----------------------------------------------------
+  postgres-replica-3:
+    image: bitnami/postgresql:latest
+    container_name: libraryDB_replica_3
+    shm_size: '256mb'
+    environment:
+      POSTGRESQL_PASSWORD: 2004
+      POSTGRESQL_EXTRA_FLAGS: "-c shared_preload_libraries=pg_stat_statements"
+      POSTGRESQL_REPLICATION_MODE: slave
+      POSTGRESQL_REPLICATION_USER: repl_user
+      POSTGRESQL_REPLICATION_PASSWORD: repl_password
+      POSTGRESQL_MASTER_HOST: postgres-primary
+      POSTGRESQL_MASTER_PORT_NUMBER: 5432
+    depends_on:
+      - postgres-primary
+    volumes:
+      - replica_3_data:/bitnami/postgresql # PAMIĘTAJ: Zawsze nowy dysk!
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+  # ----------------------------------------------------
+  # NOWA REPLIKA NR 4
+  # ----------------------------------------------------
+  postgres-replica-4:
+    image: bitnami/postgresql:latest
+    container_name: libraryDB_replica_4
+    shm_size: '256mb'
+    environment:
+      POSTGRESQL_PASSWORD: 2004
+      POSTGRESQL_EXTRA_FLAGS: "-c shared_preload_libraries=pg_stat_statements"
+      POSTGRESQL_REPLICATION_MODE: slave
+      POSTGRESQL_REPLICATION_USER: repl_user
+      POSTGRESQL_REPLICATION_PASSWORD: repl_password
+      POSTGRESQL_MASTER_HOST: postgres-primary
+      POSTGRESQL_MASTER_PORT_NUMBER: 5432
+    depends_on:
+      - postgres-primary
+    volumes:
+      - replica_4_data:/bitnami/postgresql # PAMIĘTAJ: Zawsze nowy dysk!
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+  # ----------------------------------------------------
+  # LOAD BALANCER - Brama wejściowa - Port: 5433
+  # ----------------------------------------------------
+  haproxy:
+    image: haproxy:latest
+    container_name: pg_haproxy
+    ports:
+      - "5433:5433" # To tutaj uderza Spring Boot z readOnly=true
+    volumes:
+      - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    depends_on:
+      - postgres-replica-1
+      - postgres-replica-2
+      - postgres-replica-3
+      - postgres-replica-4
+
+volumes:
+  primary_data:
+  replica_1_data:
+  replica_2_data:
+  replica_3_data:
+  replica_4_data:

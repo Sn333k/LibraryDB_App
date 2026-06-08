@@ -4,6 +4,7 @@ import com.example.libraryapp.model.BookAuthorDto;
 import com.example.libraryapp.repository.BooksAuthorsRepository;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +26,7 @@ public class BooksAuthorsController {
     }
 
     @GetMapping("/search")
+    @Transactional(readOnly = true)
     public ResponseEntity<List<Map<String, Object>>> searchBooks(
             @RequestParam(required = false, defaultValue = "") String title,
             @RequestParam(required = false, defaultValue = "") String author,

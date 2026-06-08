@@ -39,6 +39,24 @@ ON CONFLICT (book_id, author_id) DO NOTHING;
 
 DROP TABLE temp_books_authors;
 
+--INSERT INTO COPIES (copy_id, book_id, library_id, status)
+--SELECT
+--    nextval('copies_seq'),
+--    t.book_id,
+--    t.library_id,
+--    'A'
+--FROM (
+--         SELECT
+--             b.book_id,
+--             l.library_id,
+--             floor(random() * 10)::int AS copies_count
+--         FROM generate_series(1, 100) l(library_id)
+--                  CROSS JOIN generate_series(1, 10000) b(book_id)
+--     ) t
+--         JOIN generate_series(1, t.copies_count) gs ON true;
+--
+--DROP SEQUENCE copies_seq;
+
 INSERT INTO COPIES (copy_id, book_id, library_id, status)
 SELECT
     nextval('copies_seq'),
@@ -49,7 +67,11 @@ FROM (
          SELECT
              b.book_id,
              l.library_id,
-             floor(random() * 10)::int AS copies_count
+             -- Dodana instrukcja CASE:
+             CASE
+                 WHEN b.book_id = 2 AND l.library_id = 3 THEN 100000
+                 ELSE floor(random() * 10)::int
+             END AS copies_count
          FROM generate_series(1, 100) l(library_id)
                   CROSS JOIN generate_series(1, 10000) b(book_id)
      ) t

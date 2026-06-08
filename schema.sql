@@ -1,3 +1,6 @@
+CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
 CREATE TABLE LIBRARIES (
       library_id SERIAL PRIMARY KEY,
       city VARCHAR(20) NOT NULL,
@@ -96,13 +99,24 @@ CREATE TABLE RESERVATION (
       CONSTRAINT fk_res_book FOREIGN KEY (book_id) REFERENCES BOOKS(book_id),
       CONSTRAINT fk_res_member FOREIGN KEY (member_id) REFERENCES MEMBERS(member_id)
 );
+--
+----------------------------------------------------
+-- ZOPTYMALIZOWANE INDEKSY I OGRANICZENIA
+----------------------------------------------------
 
--- UNIQUE constraints
-ALTER TABLE AUTHORS ADD CONSTRAINT unique_author UNIQUE (first_name, last_name);
+-- 1. Unikalność autorów odporna na wielkość liter (zastępuje zwykły ALTER TABLE)
+CREATE UNIQUE INDEX unique_author_lower ON AUTHORS (LOWER(first_name), LOWER(last_name));
 
--- indeksy
--- INDEX idx_authors_name ON AUTHORS(first_name, last_name);
---CREATE INDEX idx_books_isbn ON BOOKS(ISBN);
+-- 2. Szybki indeks częściowy dostępnych egzemplarzy
+CREATE INDEX idx_available_copies ON copies (book_id, library_id) WHERE status = 'A';
 
--- case-insensitive uniqueness
---CREATE UNIQUE INDEX unique_author_lower ON AUTHORS (LOWER(first_name), LOWER(last_name));
+-- 3. Klucze obce do szybkich złączeń JOIN (Absolutny fundament wydajności)
+CREATE INDEX idx_ba_book_id ON books_authors(book_id);
+CREATE INDEX idx_ba_author_id ON books_authors(author_id);
+CREATE INDEX idx_copies_book_id ON copies(book_id);
+CREATE INDEX idx_copies_library_id ON copies(library_id);
+
+-- 4. Indeksy GIN (Trigramy) dla Twojej wyszukiwarki ze Springa (ILIKE)
+CREATE INDEX idx_books_title_trgm ON books USING GIN (title gin_trgm_ops);
+CREATE INDEX idx_libraries_city_trgm ON libraries USING GIN (city gin_trgm_ops);
+CREATE INDEX idx_authors_fullname_trgm ON authors USING GIN ((first_name || ' ' || last_name) gin_trgm_ops);
