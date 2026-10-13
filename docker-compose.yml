@@ -72,7 +72,7 @@ services:
   # WĘZEŁ GŁÓWNY (PRIMARY) - Port: 5432
   # ----------------------------------------------------
   postgres-primary:
-    image: bitnami/postgresql:latest
+    image: soldevelo/postgresql:latest
     container_name: libraryDB_primary
     shm_size: '256mb'
     environment:
@@ -100,7 +100,7 @@ services:
   # REPLIKA NR 1 (Ukryta wewnątrz sieci)
   # ----------------------------------------------------
   postgres-replica-1:
-    image: bitnami/postgresql:latest
+    image: soldevelo/postgresql:latest
     container_name: libraryDB_replica_1
     shm_size: '256mb'
     environment:
@@ -126,7 +126,7 @@ services:
   # REPLIKA NR 2 (Ukryta wewnątrz sieci)
   # ----------------------------------------------------
   postgres-replica-2:
-    image: bitnami/postgresql:latest
+    image: soldevelo/postgresql:latest
     container_name: libraryDB_replica_2
     shm_size: '256mb'
     environment:
@@ -151,7 +151,7 @@ services:
   # NOWA REPLIKA NR 3
   # ----------------------------------------------------
   postgres-replica-3:
-    image: bitnami/postgresql:latest
+    image: soldevelo/postgresql:latest
     container_name: libraryDB_replica_3
     shm_size: '256mb'
     environment:
@@ -176,7 +176,7 @@ services:
   # NOWA REPLIKA NR 4
   # ----------------------------------------------------
   postgres-replica-4:
-    image: bitnami/postgresql:latest
+    image: soldevelo/postgresql:latest
     container_name: libraryDB_replica_4
     shm_size: '256mb'
     environment:
